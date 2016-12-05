@@ -43,7 +43,7 @@ func NewClient(code string, clientID string, clientSecret string, redirectURL st
 	}
 }
 
-// AccessToken .. wil get a new access token
+// AccessToken will get a new access token
 func (v *Kounta) AccessToken() (string, string, error) {
 
 	data := url.Values{}
@@ -84,7 +84,7 @@ func (v *Kounta) AccessToken() (string, string, error) {
 	return "", "", fmt.Errorf("Failed to get refresh token: %s", res.Status)
 }
 
-// RefreshToken will get a new fresh token
+// RefreshToken will get a new refresh token
 func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 
 	data := url.Values{}
@@ -94,12 +94,19 @@ func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 	data.Add("grant_type", "refresh_token")
 	data.Add("redirect_uri", v.RedirectURL)
 
-	u, _ := url.ParseRequestURI(baseURL)
+	u, err := url.ParseRequestURI(baseURL)
+	if err != nil {
+		return "", "", err
+	}
+
 	u.Path = tokenURL
 	urlStr := fmt.Sprintf("%v", u)
 
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode()))
+	r, err := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		return "", "", err
+	}
 
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
@@ -146,22 +153,30 @@ func (v *Kounta) InitSaleWebHook(token string, company string, uri string) error
 		return err
 	}
 
-	hookURL := fmt.Sprintf(webHookURL, company)
+	u, err := url.ParseRequestURI(baseURL)
+	if err != nil {
+		return err
+	}
 
-	u, _ := url.ParseRequestURI(baseURL)
-	u.Path = hookURL
+	u.Path = fmt.Sprintf(webHookURL, company)
 	urlStr := fmt.Sprintf("%v", u)
 
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
-	r, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer(b))
+	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+
 	r.Header.Add("Authorization", "Bearer "+token)
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("Content-Length", strconv.Itoa(len(b)))
 
-	res, _ := client.Do(r)
-	fmt.Println(res.Status)
+	res, err := client.Do(r)
+	if err != nil {
+		return err
+	}
 
 	if res.StatusCode >= 400 {
 		return fmt.Errorf("Failed init sale webhooks %s", res.Status)
@@ -179,7 +194,10 @@ func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
 	u.Path = companiesURL
 	urlStr := fmt.Sprintf("%v", u)
 
-	r, _ := http.NewRequest("GET", urlStr, nil)
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	r.Header = http.Header(make(map[string][]string))
 	r.Header.Set("Accept", "application/json")
@@ -189,8 +207,10 @@ func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
 	fmt.Println("GetCompany TOKEN=", token)
 	fmt.Println("GetCompany HEADER=", r.Header)
 
-	res, _ := client.Do(r)
-	fmt.Println(res.Status)
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
