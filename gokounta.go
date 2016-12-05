@@ -75,7 +75,7 @@ type KountaCompany struct {
 
 //KountaSale defines an sale from Kounta
 type KountaSale struct {
-	ID       string  `json:"id"`
+	ID       int     `json:"id"`
 	SaleDate string  `json:"created_at"`
 	Status   string  `json:"status"`
 	Total    float64 `json:"total"`
