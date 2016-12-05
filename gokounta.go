@@ -57,6 +57,8 @@ func (v *Kounta) AccessToken() (string, string, error) {
 	u.Path = tokenURL
 	urlStr := fmt.Sprintf("%v", u)
 
+	fmt.Printf("AccessToken %v %v\n", urlStr, data)
+
 	client := &http.Client{}
 	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode()))
 
@@ -68,8 +70,10 @@ func (v *Kounta) AccessToken() (string, string, error) {
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 
+	fmt.Printf("AccessToken Body %v \n", string(rawResBody))
+
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("%v", string(rawResBody))
 	}
 
 	if res.StatusCode == 200 {
