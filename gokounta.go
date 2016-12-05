@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -59,17 +60,41 @@ type KountaWebHookResult struct {
 	ID         string `json:"id"`
 }
 
-//KountaWebHookResult is the request structs for creating a webhook
+//KountaWebHookRequest is the request structs for creating a webhook
 type KountaWebHookRequest struct {
 	Topic   string `json:"topic"`
 	Address string `json:"address"`
 	Format  string `json:"format"`
 }
 
-//KountaWebHookResult is the struct for a Kounta company
+//KountaCompany is the struct for a Kounta company
 type KountaCompany struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+//KountaSale defines an sale from Kounta
+type KountaSale struct {
+	ID       string  `json:"id"`
+	SaleDate string  `json:"created_at"`
+	Status   string  `json:"status"`
+	Total    float64 `json:"total"`
+	TotalTax float64 `json:"total_tax"`
+}
+
+func (obj *KountaSale) GetSaleDate() time.Time {
+	d := obj.SaleDate
+
+	if !strings.Contains(d, "T") {
+		d = strings.Replace(d, " ", "T", 1)
+	}
+
+	if !strings.Contains(d, "Z") {
+		d = d + "Z"
+	}
+
+	t1, _ := time.Parse(time.RFC3339, d)
+	return t1
 }
 
 // NewClient will create a Kounta client with default values
