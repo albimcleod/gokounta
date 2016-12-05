@@ -3,6 +3,7 @@ package gokounta
 import (
 	"bytes"
 
+	//	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,14 +14,21 @@ import (
 )
 
 const (
-	AUTHORIZE_URL        = "https://my.kounta.com/authorize"
-	BASE_URL             = "https://api.kounta.com/v1/"
+	AUTHORIZE_URL = "https://my.kounta.com/authorize"
+	BASE_URL      = "https://api.kounta.com"
+
+	URL_WEB_HOOK = "/v1/companies/%v/webhooks.json"
+
+	URL_TOKEN     = "v1/token.json"
+	URL_COMPANIES = "/v1/companies/me.json"
+
 	CONTENT_TYPE         = "application/json"
 	CONTENT_TYPE_TOKEN   = "application/x-www-form-urlencoded"
 	POST                 = "POST"
 	HEADER_CONTENT_TYPE  = "Content-Type"
 	HEADER_AUTHORIZATION = "Authorization"
-	URL_TOKEN            = "token.json"
+
+	WEB_HOOK_SALE = "orders/completed"
 )
 
 var (
@@ -36,12 +44,13 @@ type Kounta struct {
 	Timeout      time.Duration
 }
 
-//
+// TokenResponse is the response for requesting a token
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
+//KountaWebHookResult is the result structs for creating a webhook
 type KountaWebHookResult struct {
 	Type       string `json:"type"`
 	URL        string `json:"url"`
@@ -50,10 +59,17 @@ type KountaWebHookResult struct {
 	ID         string `json:"id"`
 }
 
+//KountaWebHookResult is the request structs for creating a webhook
 type KountaWebHookRequest struct {
-	Type   string `json:"type"`
-	URL    string `json:"url"`
-	Active bool   `json:"active"`
+	Topic   string `json:"topic"`
+	Address string `json:"address"`
+	Format  string `json:"format"`
+}
+
+//KountaWebHookResult is the struct for a Kounta company
+type KountaCompany struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // NewClient will create a Kounta client with default values
@@ -74,11 +90,11 @@ func (v *Kounta) AccessToken() (string, string, error) {
 	data.Set("code", v.StoreCode)
 	data.Add("client_secret", v.ClientSecret)
 	data.Add("client_id", v.ClientID)
-	data.Add("response_type", "code")
 	data.Add("redirect_uri", v.RedirectURL)
+	data.Add("grant_type", "authorization_code")
 
-	u, _ := url.ParseRequestURI(AUTHORIZE_URL)
-	//	u.Path = v.TokenURL
+	u, _ := url.ParseRequestURI(BASE_URL)
+	u.Path = URL_TOKEN
 	urlStr := fmt.Sprintf("%v", u)
 
 	client := &http.Client{}
@@ -92,12 +108,10 @@ func (v *Kounta) AccessToken() (string, string, error) {
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 
+	fmt.Println(string(rawResBody))
+
 	if err != nil {
 		return "", "", err
-	}
-
-	if res.StatusCode >= 400 {
-		return "", "", fmt.Errorf("Failed to get refresh token: %s", res.Status)
 	}
 
 	if res.StatusCode == 200 {
@@ -110,14 +124,14 @@ func (v *Kounta) AccessToken() (string, string, error) {
 		return resp.AccessToken, resp.RefreshToken, nil
 	}
 
-	return "", "", fmt.Errorf("Error requesting access token")
+	return "", "", fmt.Errorf("Failed to get refresh token: %s", res.Status)
 }
 
 // RefreshToken .. wil get a new fresh token
 func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 
 	data := url.Values{}
-	data.Set("code", v.StoreCode)
+	//	data.Set("code", v.StoreCode)
 	data.Set("refresh_token", refreshtoken)
 	data.Add("client_id", v.ClientID)
 	data.Add("client_secret", v.ClientSecret)
@@ -163,14 +177,15 @@ func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 	return "", "", fmt.Errorf("Error requesting access token")
 }
 
-/*
 // InitSaleWebHook will init the sales hook for the Kounta store
-func (v *Kounta) InitSaleWebHook(token string, uri string) error {
+func (v *Kounta) InitSaleWebHook(token string, company string, uri string) error {
+
+	fmt.Println("InitSaleWebHook", token, company, uri)
 
 	webhook := KountaWebHookRequest{
-		Type:   WEB_HOOK_SALE,
-		URL:    uri,
-		Active: true,
+		Topic:   WEB_HOOK_SALE,
+		Address: uri,
+		Format:  "json",
 	}
 
 	b, err := json.Marshal(webhook)
@@ -178,42 +193,88 @@ func (v *Kounta) InitSaleWebHook(token string, uri string) error {
 		return err
 	}
 
-	data := url.Values{}
-	data.Set("data", string(b))
+	//	data := url.Values{}
+	//	data.Set("data", string(b))
 
-	u, _ := url.ParseRequestURI(v.BaseURL)
-	u.Path = v.WebHookURL
+	hookURL := fmt.Sprintf(URL_WEB_HOOK, company)
+
+	u, _ := url.ParseRequestURI(BASE_URL)
+	u.Path = hookURL
 	urlStr := fmt.Sprintf("%v", u)
 
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
+	client.CheckRedirect = checkRedirectFunc
+
+	//	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
+	r, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer(b)) // <-- URL-encoded payload
 	r.Header.Add("Authorization", "Bearer "+token)
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("Content-Length", strconv.Itoa(len(b)))
 
 	res, _ := client.Do(r)
 	fmt.Println(res.Status)
 
-	rawResBody, err := ioutil.ReadAll(res.Body)
+	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("InitSaleWebHook Body", string(resBody))
 
 	if res.StatusCode >= 400 {
 		return fmt.Errorf("Failed init sale webhooks %s", res.Status)
 	}
 
 	if res.StatusCode == 200 {
-		resp := &TokenResponse{}
-		err = json.Unmarshal(rawResBody, resp)
-		if err != nil {
-			return err
-		}
+
 	}
 
 	return nil
 }
 
+// GetCompany will return the authenticated company
+func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	r, _ := http.NewRequest("GET", "https://api.kounta.com/v1/companies/me", nil)
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	fmt.Println("GetCompany URL=", r.URL)
+	fmt.Println("GetCompany TOKEN=", token)
+	fmt.Println("GetCompany HEADER=", r.Header)
+
+	res, _ := client.Do(r)
+	fmt.Println(res.Status)
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("GetCompany Body", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp KountaCompany
+		err = json.Unmarshal(rawResBody, &resp)
+		if err != nil {
+			return nil, err
+		}
+		return &resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Company %s", res.Status)
+
+}
+
+func checkRedirectFunc(req *http.Request, via []*http.Request) error {
+	req.Header.Add("Authorization", via[0].Header.Get("Authorization"))
+	return nil
+}
+
+/*
 // RevokeExistingWebHooks will init the sales hook for the Kounta store
 func (v *Kounta) RevokeExistingWebHooks(token string, storeID string) error {
 	u, _ := url.ParseRequestURI(v.BaseURL)
