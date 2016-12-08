@@ -3,7 +3,7 @@ package gokounta
 //Order defines an sale from Kounta
 type Order struct {
 	ID       int     `json:"id"`
-	SaleDate string  `json:"created_at"`
+	SaleDate string  `json:"updated_at"`
 	Status   string  `json:"status"`
 	Total    float64 `json:"total"`
 
