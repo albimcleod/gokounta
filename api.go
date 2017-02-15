@@ -8,10 +8,10 @@ type TokenResponse struct {
 
 //WebHookRequest is the request structs for creating a webhook
 type WebHookRequest struct {
-	Topic   string  `json:"topic"`
-	Address string  `json:"address"`
-	Format  string  `json:"format"`
-	Filter  Filters `json:"filter"`
+	Topic   string `json:"topic"`
+	Address string `json:"address"`
+	Format  string `json:"format"`
+	//Filter  Filters `json:"filter,omitempty"`
 }
 
 type Filters struct {
