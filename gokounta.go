@@ -188,8 +188,15 @@ func (v *Kounta) InitSaleWebHook(token string, company string, ID string, model 
 
 // GetCompany will return the authenticated company
 func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
-	client := &http.Client{}
-	client.CheckRedirect = checkRedirectFunc
+	//client := &http.Client{}
+	//client.CheckRedirect = checkRedirectFunc
+
+	client :=
+		&http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = companiesURL
@@ -274,15 +281,8 @@ func (v *Kounta) GetSites(token string, company string) error {
 
 // GetWebHooks will return the webhooks of the authenticated company
 func (v *Kounta) GetWebHooks(token string, company string) error {
-	//client := &http.Client{}
-	//client.CheckRedirect = checkRedirectFunc
-
-	client :=
-		&http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = fmt.Sprintf(webHookURL+".json", company)
