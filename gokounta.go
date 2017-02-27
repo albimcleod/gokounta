@@ -274,8 +274,15 @@ func (v *Kounta) GetSites(token string, company string) error {
 
 // GetWebHooks will return the webhooks of the authenticated company
 func (v *Kounta) GetWebHooks(token string, company string) error {
-	client := &http.Client{}
-	client.CheckRedirect = checkRedirectFunc
+	//client := &http.Client{}
+	//client.CheckRedirect = checkRedirectFunc
+
+	client :=
+		&http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = fmt.Sprintf(webHookURL+".json", company)
