@@ -188,15 +188,17 @@ func (v *Kounta) InitSaleWebHook(token string, company string, ID string, model 
 
 // GetCompany will return the authenticated company
 func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
-	//client := &http.Client{}
-	//client.CheckRedirect = checkRedirectFunc
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
 
-	client :=
-		&http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+	/*
+		client :=
+			&http.Client{
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					return http.ErrUseLastResponse
+				},
+			}
+	*/
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = companiesURL
@@ -407,5 +409,9 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) erro
 
 func checkRedirectFunc(req *http.Request, via []*http.Request) error {
 	req.Header.Add("Authorization", via[0].Header.Get("Authorization"))
+	req.Header.Add("Content-Type", via[0].Header.Get("Content-Type"))
+
+	fmt.Println("checkRedirectFunc req", req.Header)
+	fmt.Println("checkRedirectFunc via", via[0].Header)
 	return nil
 }
