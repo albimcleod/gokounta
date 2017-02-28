@@ -408,7 +408,9 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) erro
 }
 
 func checkRedirectFunc(req *http.Request, via []*http.Request) error {
-	//req.Header.Add("Authorization", via[0].Header.Get("Authorization"))
+	if req.Header.Get("Authorization") == "" {
+		req.Header.Add("Authorization", via[0].Header.Get("Authorization"))
+	}
 
 	//fmt.Println("checkRedirectFunc req", via[0].Header.Get("Authorization"))
 
