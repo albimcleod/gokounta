@@ -12,11 +12,13 @@ type Order struct {
 
 //OrderLine defines an line of an order from Kounta
 type OrderLine struct {
-	TotalTax  float64          `json:"line_total_tax"`
-	Product   OrderLineProduct `json:"product"`
-	UnitPrice float64          `json:"unit_price"`
-	UnitTax   float64          `json:"unit_tax"`
-	Quantity  float64          `json:"quantity"`
+	TotalTax     float64          `json:"line_total_tax"`
+	Product      OrderLineProduct `json:"product"`
+	UnitPrice    float64          `json:"unit_price"`
+	UnitTax      float64          `json:"unit_tax"`
+	LineTotal    float64          `json:"line_total_ex_tax"`
+	LineTotalTax float64          `json:"line_total_tax"`
+	Quantity     float64          `json:"quantity"`
 }
 
 //OrderLineProduct defines an product with an order from Kounta
