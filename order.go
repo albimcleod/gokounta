@@ -21,7 +21,7 @@ type OrderLine struct {
 
 //OrderLineProduct defines an product with an order from Kounta
 type OrderLineProduct struct {
-	ID   string `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
