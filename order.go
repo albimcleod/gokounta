@@ -12,7 +12,6 @@ type Order struct {
 
 //OrderLine defines an line of an order from Kounta
 type OrderLine struct {
-	TotalTax     float64          `json:"line_total_tax"`
 	Product      OrderLineProduct `json:"product"`
 	UnitPrice    float64          `json:"unit_price"`
 	UnitTax      float64          `json:"unit_tax"`
@@ -31,7 +30,7 @@ type OrderLineProduct struct {
 func (order *Order) GetTotalTax() float64 {
 	t := 0.00
 	for _, item := range order.Items {
-		t += item.TotalTax
+		t += item.LineTotalTax
 	}
 	return t
 }
