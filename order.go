@@ -10,8 +10,19 @@ type Order struct {
 	Items []OrderLine `json:"lines"`
 }
 
+//OrderLine defines an line of an order from Kounta
 type OrderLine struct {
-	TotalTax float64 `json:"line_total_tax"`
+	TotalTax  float64          `json:"line_total_tax"`
+	Product   OrderLineProduct `json:"product"`
+	UnitPrice float64          `json:"unit_price"`
+	UnitTax   float64          `json:"unit_tax"`
+	Quantity  float64          `json:"quantity"`
+}
+
+//OrderLineProduct defines an product with an order from Kounta
+type OrderLineProduct struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // GetTotalTax will return the total tax for an order

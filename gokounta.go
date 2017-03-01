@@ -12,12 +12,14 @@ import (
 )
 
 const (
-	baseURL          = "https://api.kounta.com"
-	webHookURL       = "v1/companies/%v/webhooks"
-	tokenURL         = "v1/token.json"
-	companiesURL     = "v1/companies/me"
-	sitesURL         = "v1/companies/%v/sites"
-	webHookTopicSale = "orders/completed"
+	baseURL               = "https://api.kounta.com"
+	webHookURL            = "v1/companies/%v/webhooks"
+	tokenURL              = "v1/token.json"
+	companiesURL          = "v1/companies/me"
+	sitesURL              = "v1/companies/%v/sites"
+	webHookTopicSale      = "orders/completed"
+	categoriesURL         = "v1/companies/%v/categories"
+	categoriesProductsURL = "/v1/companies/%v/categories/%v/products"
 )
 
 var (
@@ -142,63 +144,10 @@ func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 	return "", "", fmt.Errorf("Error requesting access token")
 }
 
-/*
-// InitSaleWebHook will init the sales hook for the Kounta store
-func (v *Kounta) InitSaleWebHook(token string, company string, ID string, model *WebHookRequest) error {
-
-	fmt.Println("InitSaleWebHook", token, company, model)
-
-	b, err := json.Marshal(model)
-	if err != nil {
-		return err
-	}
-
-	u, err := url.ParseRequestURI(baseURL)
-	if err != nil {
-		return err
-	}
-
-	u.Path = fmt.Sprintf(webHookURL+".json", company)
-	urlStr := fmt.Sprintf("%v", u)
-
-	client := &http.Client{}
-	client.CheckRedirect = checkRedirectFunc
-
-	r, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-
-	r.Header.Add("Authorization", "Bearer "+token)
-	r.Header.Add("Content-Type", "application/json")
-	r.Header.Add("Content-Length", strconv.Itoa(len(b)))
-
-	res, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-
-	if res.StatusCode >= 400 {
-		return fmt.Errorf("Failed init sale webhooks %s", res.Status)
-	}
-
-	return nil
-}
-*/
-
 // GetCompany will return the authenticated company
 func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
-
-	/*
-		client :=
-			&http.Client{
-				CheckRedirect: func(req *http.Request, via []*http.Request) error {
-					return http.ErrUseLastResponse
-				},
-			}
-	*/
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = companiesURL
@@ -407,14 +356,97 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) erro
 	return nil
 }
 
+// GetCategories will return the categories of the authenticated company
+func (v *Kounta) GetCategories(token string, company string) (KountaCategories, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(categoriesURL, company)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	//	fmt.Println("GetCategories Body", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp []KountaCategory
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
+
+}
+
+// GetProducts will return the products of the authenticated company
+func (v *Kounta) GetProducts(token string, company string, categoryID string) (KountaProducts, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(categoriesProductsURL, company, categoryID)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	//	fmt.Println("GetProducts Body", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp []KountaProduct
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Products %s", res.Status)
+
+}
+
 func checkRedirectFunc(req *http.Request, via []*http.Request) error {
 	if req.Header.Get("Authorization") == "" {
 		req.Header.Add("Authorization", via[0].Header.Get("Authorization"))
 	}
-
-	//fmt.Println("checkRedirectFunc req", via[0].Header.Get("Authorization"))
-
-	fmt.Println("checkRedirectFunc req", req.Header)
-	fmt.Println("checkRedirectFunc via", via[0].Header)
 	return nil
 }
