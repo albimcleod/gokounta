@@ -41,7 +41,7 @@ func (order *Order) GetTotalTax() float64 {
 func (oi *OrderLine) CalculateDiscount() float64 {
 	t := 0.00
 	if oi.PriceVariation > 0 && oi.PriceVariation < 1 {
-		return (oi.LineTotal / oi.PriceVariation) - oi.LineTotal
+		return ((oi.LineTotal + oi.LineTotalTax) / oi.PriceVariation) - (oi.LineTotal + oi.LineTotalTax)
 	}
 	return t
 }
