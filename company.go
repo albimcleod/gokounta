@@ -1,7 +1,7 @@
 package gokounta
 
-//KountaCompany is the struct for a Kounta company
-type KountaCompany struct {
+//Company is the struct for a Kounta company
+type Company struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }

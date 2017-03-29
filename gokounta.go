@@ -145,7 +145,7 @@ func (v *Kounta) RefreshToken(refreshtoken string) (string, string, error) {
 }
 
 // GetCompany will return the authenticated company
-func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
+func (v *Kounta) GetCompany(token string) (*Company, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
@@ -175,7 +175,7 @@ func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
 	fmt.Println("GetCompany Body", string(rawResBody))
 
 	if res.StatusCode == 200 {
-		var resp KountaCompany
+		var resp Company
 		err = json.Unmarshal(rawResBody, &resp)
 		if err != nil {
 			return nil, err
@@ -188,7 +188,7 @@ func (v *Kounta) GetCompany(token string) (*KountaCompany, error) {
 
 // GetSites will return the sites of the authenticated company
 //not finished
-func (v *Kounta) GetSites(token string, company string) error {
+func (v *Kounta) GetSites(token string, company string) (Sites, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
@@ -198,7 +198,7 @@ func (v *Kounta) GetSites(token string, company string) error {
 
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	r.Header = http.Header(make(map[string][]string))
@@ -207,26 +207,26 @@ func (v *Kounta) GetSites(token string, company string) error {
 
 	res, err := client.Do(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println("GetSites Body", string(rawResBody))
 
 	if res.StatusCode == 200 {
-		/*		var resp KountaCompany
-				err = json.Unmarshal(rawResBody, &resp)
-				if err != nil {
-					return nil, err
-				}
-				return &resp, nil*/
-		return nil
+		var resp Sites
+
+		err = json.Unmarshal(rawResBody, &resp)
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
 	}
-	return fmt.Errorf("Failed to get Kounta Company %s", res.Status)
+	return nil, fmt.Errorf("Failed to get Kounta Company %s", res.Status)
 
 }
 
@@ -357,7 +357,7 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) erro
 }
 
 // GetCategories will return the categories of the authenticated company
-func (v *Kounta) GetCategories(token string, company string) (KountaCategories, error) {
+func (v *Kounta) GetCategories(token string, company string) (Categories, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
@@ -384,10 +384,8 @@ func (v *Kounta) GetCategories(token string, company string) (KountaCategories, 
 		return nil, err
 	}
 
-	//	fmt.Println("GetCategories Body", string(rawResBody))
-
 	if res.StatusCode == 200 {
-		var resp []KountaCategory
+		var resp []Category
 
 		err = json.Unmarshal(rawResBody, &resp)
 

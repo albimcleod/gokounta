@@ -1,9 +1,10 @@
 package gokounta
 
-//KountaCategory is the struct for a KountaCategory company
-type KountaCategory struct {
+//Category is the struct for a Kounta category
+type Category struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-type KountaCategories []KountaCategory
+//Categories is the struct for a list of Category
+type Categories []Category
