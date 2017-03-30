@@ -231,7 +231,7 @@ func (v *Kounta) GetSites(token string, company string) (Sites, error) {
 }
 
 // GetWebHooks will return the webhooks of the authenticated company
-func (v *Kounta) GetWebHooks(token string, company string) error {
+func (v *Kounta) GetWebHooks(token string, company string) (WebHooks, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
@@ -241,7 +241,7 @@ func (v *Kounta) GetWebHooks(token string, company string) error {
 
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	r.Header = http.Header(make(map[string][]string))
@@ -250,31 +250,30 @@ func (v *Kounta) GetWebHooks(token string, company string) error {
 
 	res, err := client.Do(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	fmt.Println("GetWebHooks Body", string(rawResBody))
 
 	if res.StatusCode == 200 {
-		/*		var resp KountaCompany
-				err = json.Unmarshal(rawResBody, &resp)
-				if err != nil {
-					return nil, err
-				}
-				return &resp, nil*/
-		return nil
+		var resp WebHooks
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
 	}
-	return fmt.Errorf("Failed to get Kounta Web Hooks %s", res.Status)
+	return nil, fmt.Errorf("Failed to get Kounta Web Hooks %s", res.Status)
 
 }
 
 // CreateSaleWebHook will init the sales hook for the Kounta store
-func (v *Kounta) CreateSaleWebHook(token string, company string, webhook WebHookRequest) error {
+func (v *Kounta) CreateSaleWebHook(token string, company string, webhook WebHook) error {
 
 	fmt.Println("CreateSaleWebHook", token, company, webhook)
 
