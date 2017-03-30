@@ -2,7 +2,7 @@ package gokounta
 
 //WebHook is the request structs for creating a webhook
 type WebHook struct {
-	ID      string  `json:"id,omitempty"`
+	ID      int     `json:"id,omitempty"`
 	Topic   string  `json:"topic"`
 	Address string  `json:"address"`
 	Format  string  `json:"format"`

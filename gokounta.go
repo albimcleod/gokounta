@@ -315,7 +315,7 @@ func (v *Kounta) CreateSaleWebHook(token string, company string, webhook WebHook
 }
 
 // DeleteSaleWebHook will init the sales hook for the Kounta store
-func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) error {
+func (v *Kounta) DeleteSaleWebHook(token string, company string, id int) error {
 
 	fmt.Println("UpdateSaleWebHook", token, company, id)
 
@@ -324,7 +324,7 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id string) erro
 		return err
 	}
 
-	u.Path = fmt.Sprintf(webHookURL+"/"+id+".json", company)
+	u.Path = fmt.Sprintf(webHookURL+"/"+strconv.Itoa(id)+".json", company)
 	urlStr := fmt.Sprintf("%v", u)
 
 	client := &http.Client{}
