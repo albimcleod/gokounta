@@ -20,6 +20,7 @@ const (
 	webHookTopicSale      = "orders/completed"
 	categoriesURL         = "v1/companies/%v/categories"
 	categoriesProductsURL = "/v1/companies/%v/categories/%v/products"
+	ordersURL             = "v1/companies/%v/sites/%v/orders/pending.json"
 )
 
 var (
@@ -172,7 +173,7 @@ func (v *Kounta) GetCompany(token string) (*Company, error) {
 		return nil, err
 	}
 
-	fmt.Println("GetCompany Body", string(rawResBody))
+	//	fmt.Println("GetCompany Body", string(rawResBody))
 
 	if res.StatusCode == 200 {
 		var resp Company
@@ -438,6 +439,50 @@ func (v *Kounta) GetProducts(token string, company string, categoryID string) (K
 		return resp, nil
 	}
 	return nil, fmt.Errorf("Failed to get Kounta Products %s", res.Status)
+
+}
+
+// GetOrders will return the orders of the authenticated company
+func (v *Kounta) GetOrders(token string, company string, siteID string) ([]Order, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(ordersURL, company, siteID)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode == 200 {
+		var resp []Order
+
+		fmt.Println(string(rawResBody))
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
 
 }
 
