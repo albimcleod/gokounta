@@ -6,6 +6,7 @@ type Order struct {
 	SaleDate       string        `json:"created_at"`
 	UpdateDate     string        `json:"updated_at"`
 	Status         string        `json:"status"`
+	Notes          string        `json:"notes"`
 	Total          float64       `json:"total"`
 	PriceVariation float64       `json:"price_variation"`
 	Customer       OrderCustomer `json:"customer"`
