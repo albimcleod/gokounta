@@ -1,6 +1,6 @@
 package gokounta
 
-//Order defines an sale from Kounta
+//Order defines a sale from Kounta
 type Order struct {
 	ID             int           `json:"id"`
 	SaleDate       string        `json:"created_at"`
@@ -15,14 +15,14 @@ type Order struct {
 	Payments []OrderPayment `json:"payments"`
 }
 
-//OrderCustomer defines an line of an order from Kounta
+//OrderCustomer defines  line of an order from Kounta
 type OrderCustomer struct {
 	ID        int    `json:"id"`
 	LastName  string `json:"last_name"`
 	FirstName string `json:"first_name"`
 }
 
-//OrderLine defines an line of an order from Kounta
+//OrderLine defines a line of an order from Kounta
 type OrderLine struct {
 	Product        OrderLineProduct `json:"product"`
 	UnitPrice      float64          `json:"unit_price"`
@@ -33,20 +33,20 @@ type OrderLine struct {
 	PriceVariation float64          `json:"price_variation"`
 }
 
-//OrderLineProduct defines an product with an order from Kounta
+//OrderLineProduct defines a product within an order from Kounta
 type OrderLineProduct struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-//OrderPayment defines an line of an order from Kounta
+//OrderPayment defines a payment of an order from Kounta
 type OrderPayment struct {
 	Number int                `json:"number"`
 	Amount float64            `json:"amount"`
 	Method OrderPaymentMethod `json:"method"`
 }
 
-//OrderLineProduct defines an product with an order from Kounta
+//OrderPaymentMethod defines a payment method within an order from Kounta
 type OrderPaymentMethod struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
