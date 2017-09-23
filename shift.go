@@ -8,7 +8,6 @@ import (
 
 //Shift is the struct for a Kounta Shift
 type Shift struct {
-	ID         int          `json:"id"`
 	StartedAt  string       `json:"started_at"`
 	FinishedAt string       `json:"finished_at"`
 	Staff      Staff        `json:"staff_member"`
@@ -23,7 +22,6 @@ type ShiftBreak struct {
 //FieldMap is required for binding
 func (obj *Shift) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
-		&obj.ID:         "id",
 		&obj.StartedAt:  "started_at",
 		&obj.FinishedAt: "finished_at",
 		&obj.Staff:      "staff_member",
