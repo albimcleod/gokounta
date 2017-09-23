@@ -21,6 +21,7 @@ const (
 	categoriesURL         = "v1/companies/%v/categories"
 	categoriesProductsURL = "/v1/companies/%v/categories/%v/products"
 	ordersURL             = "v1/companies/%v/sites/%v/orders/pending.json"
+	staffURL              = "v1/companies/%v/staff"
 )
 
 var (
@@ -228,6 +229,49 @@ func (v *Kounta) GetSites(token string, company string) (Sites, error) {
 		return resp, nil
 	}
 	return nil, fmt.Errorf("Failed to get Kounta Company %s", res.Status)
+
+}
+
+// GetStaff will return the staff of the authenticated company
+func (v *Kounta) GetStaff(token string, company string) (Staffs, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(staffURL, company)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("GetStaff Body", string(rawResBody))
+
+	if res.StatusCode == 200 {
+		var resp Staffs
+
+		err = json.Unmarshal(rawResBody, &resp)
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Staff %s", res.Status)
 
 }
 
