@@ -22,6 +22,8 @@ const (
 	categoriesProductsURL = "/v1/companies/%v/categories/%v/products"
 	ordersURL             = "v1/companies/%v/sites/%v/orders/pending.json"
 	staffURL              = "v1/companies/%v/staff"
+	ordersCompleteURL     = "v1/companies/%v/sites/%v/orders/complete.json"
+	ordersSingleURL       = "v1/companies/%v/orders/%v.json"
 )
 
 var (
@@ -306,6 +308,8 @@ func (v *Kounta) GetWebHooks(token string, company string) (WebHooks, error) {
 	if res.StatusCode == 200 {
 		var resp WebHooks
 
+		fmt.Println(string(rawResBody))
+
 		err = json.Unmarshal(rawResBody, &resp)
 
 		if err != nil {
@@ -517,6 +521,50 @@ func (v *Kounta) GetOrders(token string, company string, siteID string) ([]Order
 	if res.StatusCode == 200 {
 		var resp []Order
 
+		//fmt.Println(string(rawResBody))
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
+
+}
+
+// GetOrders will return the orders of the authenticated company
+func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) ([]Order, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(ordersCompleteURL, company, siteID)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode == 200 {
+		var resp []Order
+
 		fmt.Println(string(rawResBody))
 
 		err = json.Unmarshal(rawResBody, &resp)
@@ -525,6 +573,50 @@ func (v *Kounta) GetOrders(token string, company string, siteID string) ([]Order
 			return nil, err
 		}
 		return resp, nil
+	}
+	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
+
+}
+
+// GetOrders will return the orders of the authenticated company
+func (v *Kounta) GetOrdersSingle(token string, company string, orderID string) (*Order, error) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(ordersSingleURL, company, orderID)
+	urlStr := fmt.Sprintf("%v", u)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode == 200 {
+		resp := Order{}
+
+		fmt.Println(string(rawResBody))
+
+		err = json.Unmarshal(rawResBody, &resp)
+
+		if err != nil {
+			return nil, err
+		}
+		return &resp, nil
 	}
 	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
 

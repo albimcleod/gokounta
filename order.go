@@ -10,6 +10,7 @@ type Order struct {
 	Total          float64       `json:"total"`
 	PriceVariation float64       `json:"price_variation"`
 	Customer       OrderCustomer `json:"customer"`
+	SiteID         float64       `json:"site_id"`
 
 	Items    []OrderLine    `json:"lines"`
 	Payments []OrderPayment `json:"payments"`
