@@ -2,7 +2,7 @@ package gokounta
 
 //Order defines a sale from Kounta
 type Order struct {
-	ID             int           `json:"id"`
+	ID             int64         `json:"id"`
 	SaleDate       string        `json:"created_at"`
 	UpdateDate     string        `json:"updated_at"`
 	Status         string        `json:"status"`
@@ -18,7 +18,7 @@ type Order struct {
 
 //OrderCustomer defines  line of an order from Kounta
 type OrderCustomer struct {
-	ID        int    `json:"id"`
+	ID        int64  `json:"id"`
 	LastName  string `json:"last_name"`
 	FirstName string `json:"first_name"`
 }
@@ -36,7 +36,7 @@ type OrderLine struct {
 
 //OrderLineProduct defines a product within an order from Kounta
 type OrderLineProduct struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -49,7 +49,7 @@ type OrderPayment struct {
 
 //OrderPaymentMethod defines a payment method within an order from Kounta
 type OrderPaymentMethod struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 

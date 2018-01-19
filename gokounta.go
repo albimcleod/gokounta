@@ -543,6 +543,8 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 	u.Path = fmt.Sprintf(ordersCompleteURL, company, siteID)
 	urlStr := fmt.Sprintf("%v", u)
 
+	fmt.Println(urlStr)
+
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return nil, err
@@ -574,6 +576,7 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 		}
 		return resp, nil
 	}
+	fmt.Println(string(rawResBody))
 	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
 
 }
@@ -586,6 +589,8 @@ func (v *Kounta) GetOrdersSingle(token string, company string, orderID string) (
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = fmt.Sprintf(ordersSingleURL, company, orderID)
 	urlStr := fmt.Sprintf("%v", u)
+
+	fmt.Println(urlStr)
 
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
@@ -609,7 +614,7 @@ func (v *Kounta) GetOrdersSingle(token string, company string, orderID string) (
 	if res.StatusCode == 200 {
 		resp := Order{}
 
-		fmt.Println(string(rawResBody))
+		//	fmt.Println(string(rawResBody))
 
 		err = json.Unmarshal(rawResBody, &resp)
 
@@ -618,7 +623,8 @@ func (v *Kounta) GetOrdersSingle(token string, company string, orderID string) (
 		}
 		return &resp, nil
 	}
-	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
+	fmt.Println(string(rawResBody))
+	return nil, fmt.Errorf("Failed to get Kounta Sale %s", res.Status)
 
 }
 
