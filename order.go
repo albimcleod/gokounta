@@ -32,6 +32,7 @@ type OrderLine struct {
 	LineTotalTax   float64          `json:"line_total_tax"`
 	Quantity       float64          `json:"quantity"`
 	PriceVariation float64          `json:"price_variation"`
+	Modifiers      []int            `json:"modifiers"`
 }
 
 //OrderLineProduct defines a product within an order from Kounta
