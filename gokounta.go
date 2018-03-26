@@ -448,16 +448,35 @@ func (v *Kounta) GetCategories(token string, company string) (Categories, error)
 
 // GetProducts will return the products of the authenticated company
 func (v *Kounta) GetProducts(token string, company string, categoryID string) (KountaProducts, error) {
-	client := &http.Client{}
-	client.CheckRedirect = checkRedirectFunc
 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = fmt.Sprintf(categoriesProductsURL, company, categoryID)
+
 	urlStr := fmt.Sprintf("%v", u)
+
+	results := new(KountaProducts)
+
+	for urlStr != "" {
+
+		resp := new(KountaProducts)
+
+		*resp, _, urlStr = v.callProduct(urlStr, token)
+
+		*results = append(*results, *resp...)
+
+		fmt.Println("X-Next-Page", urlStr, len(*results))
+	}
+
+	return *results, nil
+}
+
+func (v *Kounta) callProduct(urlStr string, token string) (KountaProducts, error, string) {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
 
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
-		return nil, err
+		return nil, err, ""
 	}
 
 	r.Header = http.Header(make(map[string][]string))
@@ -466,15 +485,13 @@ func (v *Kounta) GetProducts(token string, company string, categoryID string) (K
 
 	res, err := client.Do(r)
 	if err != nil {
-		return nil, err
+		return nil, err, ""
 	}
 
 	rawResBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, err, ""
 	}
-
-	//	fmt.Println("GetProducts Body", string(rawResBody))
 
 	if res.StatusCode == 200 {
 		var resp []KountaProduct
@@ -482,12 +499,11 @@ func (v *Kounta) GetProducts(token string, company string, categoryID string) (K
 		err = json.Unmarshal(rawResBody, &resp)
 
 		if err != nil {
-			return nil, err
+			return nil, err, ""
 		}
-		return resp, nil
+		return resp, nil, res.Header.Get("X-Next-Page")
 	}
-	return nil, fmt.Errorf("Failed to get Kounta Products %s", res.Status)
-
+	return nil, fmt.Errorf("Failed to get Kounta Products %s", res.Status), ""
 }
 
 // GetOrders will return the orders of the authenticated company
