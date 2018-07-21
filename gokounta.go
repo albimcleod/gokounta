@@ -384,10 +384,6 @@ func (v *Kounta) DeleteSaleWebHook(token string, company string, id int) error {
 		return err
 	}
 
-	fmt.Println("UpdateSaleWebHook URL=", r.URL)
-	fmt.Println("UpdateSaleWebHook TOKEN=", token)
-	fmt.Println("UpdateSaleWebHook HEADER=", r.Header)
-
 	r.Header.Add("Authorization", "Bearer "+token)
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("Content-Length", "0") // strconv.Itoa(len(b)))
@@ -593,7 +589,7 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 		return resp, nil
 	}
 	fmt.Println(string(rawResBody))
-	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
+	return nil, fmt.Errorf("Failed to get Kounta GetOrdersComplete %s", res.Status)
 
 }
 
