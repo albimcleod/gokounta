@@ -555,6 +555,9 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 	u.Path = fmt.Sprintf(ordersCompleteURL, company, siteID)
 	urlStr := fmt.Sprintf("%v", u)
 
+	//urlStr += "?created_gte=2018-08-28"
+	urlStr += "?start=434481049"
+
 	fmt.Println(urlStr)
 
 	r, err := http.NewRequest("GET", urlStr, nil)
@@ -579,7 +582,9 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 	if res.StatusCode == 200 {
 		var resp []Order
 
-		fmt.Println(string(rawResBody))
+		fmt.Println(res.Header["X-Next-Page"])
+
+		//	fmt.Println(string(rawResBody))
 
 		err = json.Unmarshal(rawResBody, &resp)
 
@@ -589,7 +594,7 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 		return resp, nil
 	}
 	fmt.Println(string(rawResBody))
-	return nil, fmt.Errorf("Failed to get Kounta GetOrdersComplete %s", res.Status)
+	return nil, fmt.Errorf("Failed to get Kounta Categories %s", res.Status)
 
 }
 
