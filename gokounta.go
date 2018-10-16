@@ -556,7 +556,7 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 	urlStr := fmt.Sprintf("%v", u)
 
 	//urlStr += "?created_gte=2018-08-28"
-	urlStr += "?start=434481049"
+	//urlStr += "?start=434481049"
 
 	fmt.Println(urlStr)
 
