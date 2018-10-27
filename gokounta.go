@@ -547,7 +547,7 @@ func (v *Kounta) GetOrders(token string, company string, siteID string) ([]Order
 }
 
 // GetOrders will return the orders of the authenticated company
-func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) ([]Order, error) {
+func (v *Kounta) GetOrdersComplete(token string, company string, siteID string, start string) ([]Order, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
 
@@ -556,7 +556,9 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string) 
 	urlStr := fmt.Sprintf("%v", u)
 
 	//urlStr += "?created_gte=2018-08-28"
-	//urlStr += "?start=434481049"
+	if start != "" {
+		urlStr += "?start=" + start
+	}
 
 	fmt.Println(urlStr)
 
