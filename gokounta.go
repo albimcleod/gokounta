@@ -560,7 +560,7 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string, 
 		urlStr += "?start=" + start
 	}
 
-	fmt.Println(urlStr)
+	//fmt.Println(urlStr)
 
 	r, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
