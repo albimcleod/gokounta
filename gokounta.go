@@ -24,6 +24,7 @@ const (
 	staffURL              = "v1/companies/%v/staff"
 	ordersCompleteURL     = "v1/companies/%v/sites/%v/orders/complete.json"
 	ordersSingleURL       = "v1/companies/%v/orders/%v.json"
+	companyStatus         = "v1/companies/%v/status.json"
 )
 
 var (
@@ -546,7 +547,7 @@ func (v *Kounta) GetOrders(token string, company string, siteID string) ([]Order
 
 }
 
-// GetOrders will return the orders of the authenticated company
+// GetOrdersComplete will return the orders of the authenticated company
 func (v *Kounta) GetOrdersComplete(token string, company string, siteID string, start string) ([]Order, error) {
 	client := &http.Client{}
 	client.CheckRedirect = checkRedirectFunc
@@ -554,6 +555,8 @@ func (v *Kounta) GetOrdersComplete(token string, company string, siteID string, 
 	u, _ := url.ParseRequestURI(baseURL)
 	u.Path = fmt.Sprintf(ordersCompleteURL, company, siteID)
 	urlStr := fmt.Sprintf("%v", u)
+
+	fmt.Println("u.Path ", u.Path)
 
 	//urlStr += "?created_gte=2018-08-28"
 	if start != "" {
@@ -644,6 +647,49 @@ func (v *Kounta) GetOrdersSingle(token string, company string, orderID string) (
 	}
 	fmt.Println(string(rawResBody))
 	return nil, fmt.Errorf("Failed to get Kounta Sale %s", res.Status)
+
+}
+
+// GetStatus will return the orders of the authenticated company
+func (v *Kounta) GetStatus(token string, company string) error {
+	client := &http.Client{}
+	client.CheckRedirect = checkRedirectFunc
+
+	u, _ := url.ParseRequestURI(baseURL)
+	u.Path = fmt.Sprintf(companyStatus, company)
+	urlStr := fmt.Sprintf("%v", u)
+
+	fmt.Println(urlStr)
+
+	r, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return err
+	}
+
+	r.Header = http.Header(make(map[string][]string))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(r)
+	if err != nil {
+		return err
+	}
+
+	rawResBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode == 200 {
+
+		fmt.Println(string(rawResBody))
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	fmt.Println(string(rawResBody))
+	return fmt.Errorf("Failed to get Kounta Sale %s", res.Status)
 
 }
 
