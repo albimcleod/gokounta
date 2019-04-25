@@ -58,7 +58,11 @@ type OrderPaymentMethod struct {
 func (order *Order) GetTotalTax() float64 {
 	t := 0.00
 	for _, item := range order.Items {
-		t += item.LineTotalTax
+		if item.PriceVariation > 0 && item.PriceVariation < 1 {
+			t += item.LineTotalTax * item.PriceVariation
+		} else {
+			t += item.LineTotalTax
+		}
 	}
 	return t
 }
